@@ -81,9 +81,13 @@ pop_cnty  <- bind_rows(pop_cnty0 , pop_terr, pop_state0[which(pop_state0$state_n
 #########################
 ## HEX MAP SHAPE FILES 
 
-shp_hex         <- read_csv("./data/hex.csv")
-shp_hex_centers <- read_csv("./data/hex_centers.csv") %>% rename(state_abb = id)
-
+shp_hex         <- read_csv("./data/hex.csv") %>%
+  rename(state_name = name) %>%
+  mutate(state_name = ifelse(state_name == "Northern Mariana Islands", "Mariana Islands", state_name))
+shp_hex_centers <- read_csv("./data/hex_centers.csv") %>% 
+  rename(state_abb = id)  %>% 
+  rename(state_name = name) %>% 
+  mutate(state_name = ifelse(state_name == "Northern Mariana Islands", "Mariana Islands", state_name)) 
 
 
 #' Save all data frames 

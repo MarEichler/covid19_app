@@ -119,6 +119,11 @@ create_dt  <- Data.frame() ? function(
   if (LEV == "STATE"){
     log_info("{LEV} sum up by STATE level")
     DT <- DT[, lapply(.SD, sum), by = c("state_name", "DATE"), .SDcols = c("C_CUM", "D_CUM")]
+    
+    usa <- DT[, lapply(.SD, sum), by = c("DATE"), .SDcols = c("C_CUM", "D_CUM")]
+    setDT(usa)[, `:=` (state_name = "United States")]
+    
+    DT <- rbind(usa, DT)
   }
   
   #combine with population data 
