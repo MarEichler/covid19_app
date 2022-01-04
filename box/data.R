@@ -87,6 +87,13 @@ calc_p100K <- function(VAL, POP){
   ifelse(is.na(POP) | POP == 0, NA, VAL/POP) * 100000
 }
 
+#' Calculated Cases Per Capital (Proportion of Population)
+#' @param POP 
+#' @param VAL 
+calc_pc <- function(VAL, POP){
+  ifelse(is.na(POP) | POP == 0, NA, VAL/POP)
+}
+
 
 ##############################
 # create dt ######################
@@ -149,8 +156,17 @@ create_dt  <- Data.frame() ? function(
   log_info("{LEV} creating PROP columns")
   setDT(DT)[,`:=`
             (   C_CUM_P100K = calc_p100K(C_CUM, POP)
+              , C_CUM_PC    = calc_pc(   C_CUM, POP)
               , C_NEW_P100K = calc_p100K(C_NEW, POP)
+             #, C_NEW_PC    = calc_pc(   C_NEW, POP)
               , C_MA7_P100K = calc_p100K(C_MA7, POP)
+             #, C_MA7_PC    = calc_pc(   C_MA7, POP)
+              , D_CUM_P100K = calc_p100K(D_CUM, POP)
+              , D_CUM_PC    = calc_pc(   D_CUM, POP)
+              , D_NEW_P100K = calc_p100K(D_NEW, POP)
+             #, D_NEW_PC    = calc_pc(   D_NEW, POP)
+              , D_MA7_P100K = calc_p100K(D_MA7, POP)
+             #, D_MA7_PC    = calc_pc(   D_MA7, POP)
             )]
   
   log_success("{LEV} complete creating DT")
