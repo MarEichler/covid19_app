@@ -2,24 +2,28 @@
 box::use(
     dplyr[...]
   , ggplot2[...]
-  , magrittr[`%>%`]
-  , tidyr[tribble]
+  , tibble[tribble]
   , glue[glue]
-  , DescTools[RoundTo]
   , scales[percent, comma]
-  , stats[quantile]
   , glue[glue]
-  , typed[...]
-  , logger[...]
+  , stats[quantile]
   , ./meta
+  #, DescTools[RoundTo]
+  #, logger[...]
 )
 
+
+#doesn't work in box::use({package}[...]) 
+#works when use {ggplot2}, i.e. box::use(ggplot2[...])
+#don't know why ? but need to load using library() otherwise error when upload to shinyapps.io 
+library(DescTools)
+library(logger)
 
 
 
 #' Variable Type 
-#' @param VAR 
-vartype <- ? function(VAR = ? Character(1, ... = "Not Valid VAR" ~ . %in% meta$VAROPTS$VAR)){
+#' @param VAR Character(1, ... = "Not Valid VAR" ~ . %in% meta$VAROPTS$VAR)
+vartype <-  function(VAR){
   TYPE <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR), ]$TYPE
   return(TYPE)
 }
@@ -27,8 +31,8 @@ vartype <- ? function(VAR = ? Character(1, ... = "Not Valid VAR" ~ . %in% meta$V
 
 #' Plot Values (round for MA7)
 #' @param VAL 
-#' @param VAR 
-plotval <- ? function(VAL , VAR = ? Character(1, ... = "Not Valid VAR" ~ . %in% meta$VAROPTS$VAR)){
+#' @param VAR Character(1, ... = "Not Valid VAR" ~ . %in% meta$VAROPTS$VAR)
+plotval <- function(VAL , VAR){
   TYPE <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR), ]$TYPE
          if (TYPE == "p100k"){
     out <- ifelse(VAL >  1.5, round(VAL, digits = 0), round(VAL, digits = 1))
@@ -85,11 +89,8 @@ coldf <- function(VAR, VALS){
 
 #' Display Values 
 #' @param VAL 
-#' @param VAR 
-displayval <- ? function(
-    VAL 
-  , VAR = ? Character(1)
-  ){
+#' @param VAR Character(1)
+displayval <-  function(VAL , VAR ){
   TYPE <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR), ]$TYPE
        if (TYPE == "p100k"){out <- ifelse(VAL >  1.5 | VAL == 0, comma(VAL, accuracy = 1), comma(VAL, accuracy = 0.1))}
   else if (TYPE == "count"){out <- comma(VAL, accuracy = 1)}
@@ -224,14 +225,14 @@ create_map <- function(DT, VAR){
       , aes(x=x, y=y+5, label=state_abb)
       , color = toPlot_centers$font
       , fontface = "bold"
-      , family  = "Ubuntu Mono"
+      #, family  = "Ubuntu Mono"
     ) +
     geom_text(
       data = toPlot_centers
       , aes(x=x, y=y-6, label=display)
       , color = toPlot_centers$font
       , size = 2.5
-      , family  = "Ubuntu Mono"
+     # , family  = "Ubuntu Mono"
     )+
     facet_grid( . ~ USA_val) + 
     scale_fill_manual(
@@ -246,12 +247,12 @@ create_map <- function(DT, VAR){
     theme_void() + 
     labs(title = plottitle) + 
     theme(
-        plot.title = element_text(face = "bold", hjust = 0.5, margin = margin(t=3, r=0, b=6, l=0), family = "Ubuntu")
-      , strip.text.x  = element_text(size = 12, color = USA_font, face = "bold", margin = margin(t=3, r=0, b=3, l=0), family = "Ubuntu")
+        plot.title = element_text(face = "bold", hjust = 0.5, margin = margin(t=3, r=0, b=6, l=0))#, family = "Ubuntu")
+      , strip.text.x  = element_text(size = 12, color = USA_font, face = "bold", margin = margin(t=3, r=0, b=3, l=0)) #, family = "Ubuntu")
       , strip.background.x = element_rect(fill = USA_col, color = USA_col)
       , legend.spacing.x = unit(0, 'cm')
       , legend.margin=margin(t=0, r=0, b=0, l=0) 
-      , legend.text = element_text(margin = margin(t=0, r=0, b=0, l=1), family  = "Ubuntu Mono")
+      , legend.text = element_text(margin = margin(t=0, r=0, b=0, l=1)) #, family  = "Ubuntu Mono")
       , legend.position = "right"
     )
   log_info(glue("Create Hex Map for {VAR}"))

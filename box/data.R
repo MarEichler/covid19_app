@@ -1,11 +1,30 @@
 
-box::use(
-    ./link
-  , lubridate[mdy]
-  , typed[...]
-  , data.table[...]
-  , logger[...]
-)
+# box::use(
+#     lubridate[mdy]
+#   , data.table[...]
+#   , logger[...]
+# )
+
+
+#doesn't work in box::use({package}[...]) 
+#works when use {ggplot2}, i.e. box::use(ggplot2[...])
+#don't know why ? but need to load using library() otherwise error when upload to shinyapps.io 
+library(lubridate) 
+library(data.table)
+library(logger)
+
+
+#links for pulling down data 
+
+#JOHN HOPKINS GITHUB 
+#SOURCE: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series
+
+#' Link to CSV cases data from John Hopkins 
+link_jh_cases  <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv"
+
+#' Link to CSV deaths data from John Hopkins 
+link_jh_deaths <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv"
+
 
 
 #####################################
@@ -13,12 +32,9 @@ box::use(
 #' @param LINK Character(1) - character vector of length 1 
 #' @param TYPE Character(1) - character vector of length 1 
 #' @return Long DF where each date and cumulative county are on rows 
-#' @examples pull_JH(link$jh_cases, "C")
-#' @examples pull_JH(link$jh_dealth, "D")
-pull_JH <- ? function(
-    LINK = ? Character(1)
-  , TYPE = ? Character(1, ... = "Need to be C = Cases, D = Dealths" ~ . %in% c("C", "D"))
-  ){
+#' @examples pull_JH(link_jh_cases,  "C")
+#' @examples pull_JH(link_jh_deaths, "D")
+pull_JH <- function(LINK , TYPE){
   # LOAD IN DATA 
   DT00 <- fread(LINK) 
   
@@ -50,13 +66,15 @@ pull_JH <- ? function(
   return(DT)
 }
 
+
+
 ####################################3
 #' Return Data after pulled 
 raw_data <- function(){
   log_info("start JH pull")
-  jh_C <- pull_JH(link$jh_cases, "C")
+  jh_C <- pull_JH(link_jh_cases, "C")
   log_info("pull Cases from JH github")
-  jh_D <- pull_JH(link$jh_deaths, "D")
+  jh_D <- pull_JH(link_jh_deaths, "D")
   log_info("pull Deaths from JH github")
   DT <- merge(jh_C, jh_D)[order(county_fips),]
   DT[order(county_fips),]
@@ -73,7 +91,7 @@ calc_new <- function(CUM, DATE){
   startdate <- as.Date("2020-01-22")
   NEW <- CUM - shift(CUM)
   OUT <- dplyr::case_when(
-      DATE == startdate           ~ as.integer(CUM) #if first date of data use Cumulative data 
+    DATE == startdate           ~ as.integer(CUM) #if first date of data use Cumulative data 
     ,                     NEW < 0 ~ as.integer(0)   #if 'new' is negative (cases counts were updated) just set ot zero
     , DATE >  startdate & NEW >=0 ~ as.integer(NEW) #if asfter start and new is >=0, then use new value 
   )
@@ -111,12 +129,7 @@ calc_pc <- function(VAL, POP){
 #' @param LEV 
 #' @export
 #' @examples
-create_dt  <- Data.frame() ? function(
-    RAWDT = ? Data.frame()
-  , POPDT = ? Data.frame()
-  , LEV   = ? Character(1, ... = "Need to be STATE or CNTY" ~ . %in% c("STATE", "CNTY"))
-  ){
-  
+create_dt  <- function(RAWDT, POPDT, LEV){
   DT <- RAWDT
   
   #order 
@@ -138,14 +151,14 @@ create_dt  <- Data.frame() ? function(
   DT <- merge(DT, POPDT, all.x = TRUE)
   
   #calculate new cases 
-  log_info("{LEV} creating NEW columsn")
+  log_info("{LEV} creating NEW columns")
   setDT(DT)[, `:=`
             (   C_NEW = calc_new(C_CUM, DATE)
               , D_NEW = calc_new(D_CUM, DATE)
             ), by = county_fips]
   
   #calculate 7day moving average 
-  log_info("{LEV} creating MA7 columsn")
+  log_info("{LEV} creating MA7 columns")
   setDT(DT)[, `:=`
             (   C_MA7 = c(rep(NA, 6), zoo::rollmean(C_NEW, k = 7, na.rm = TRUE))
               , D_MA7 = c(rep(NA, 6), zoo::rollmean(D_NEW, k = 7, na.rm = TRUE))
@@ -158,15 +171,15 @@ create_dt  <- Data.frame() ? function(
             (   C_CUM_P100K = calc_p100K(C_CUM, POP)
               , C_CUM_PC    = calc_pc(   C_CUM, POP)
               , C_NEW_P100K = calc_p100K(C_NEW, POP)
-             #, C_NEW_PC    = calc_pc(   C_NEW, POP)
+              #, C_NEW_PC    = calc_pc(   C_NEW, POP)
               , C_MA7_P100K = calc_p100K(C_MA7, POP)
-             #, C_MA7_PC    = calc_pc(   C_MA7, POP)
+              #, C_MA7_PC    = calc_pc(   C_MA7, POP)
               , D_CUM_P100K = calc_p100K(D_CUM, POP)
               , D_CUM_PC    = calc_pc(   D_CUM, POP)
               , D_NEW_P100K = calc_p100K(D_NEW, POP)
-             #, D_NEW_PC    = calc_pc(   D_NEW, POP)
+              #, D_NEW_PC    = calc_pc(   D_NEW, POP)
               , D_MA7_P100K = calc_p100K(D_MA7, POP)
-             #, D_MA7_PC    = calc_pc(   D_MA7, POP)
+              #, D_MA7_PC    = calc_pc(   D_MA7, POP)
             )]
   
   log_success("{LEV} complete creating DT")
@@ -189,9 +202,4 @@ get_data <- function(){
   
   return(out)
 }
-
-
-
-
-
 
