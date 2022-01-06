@@ -6,8 +6,8 @@ map_UI <- function(id) {
     sidebarLayout(
       mod_filters_UI(ns("var")), 
       mainPanel(
-        #width = 9, 
-        plotOutput(ns("map")) %>% withSpinner() 
+        width = 8, 
+        plotOutput(ns("map"), width = "100%") %>% withSpinner() 
         #imageOutput(ns("map"), width = "100%", height = "100%") %>% withSpinner()
       ) #end mainPancel 
     ) #end sidebarLayout
@@ -19,7 +19,12 @@ map_Server <- function(id) {
   moduleServer(id, function(input, output, session) {
     var <- mod_filters_Server("var")
     
-    output$map <- renderPlot({ ggplot2::ggplot() + ggplot2::ggtitle( var$metric() ) })
+    #output$map <- renderPlot({ ggplot2::ggplot() + ggplot2::ggtitle( var$metric() ) })
+    
+    output$map <- renderPlot({
+      plot_map$create_map( DATA_state, var$metric() )
+    })
+    
     
     
     # output$map <- renderImage({

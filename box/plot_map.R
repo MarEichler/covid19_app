@@ -8,16 +8,11 @@ box::use(
   , glue[glue]
   , stats[quantile]
   , ./meta
+#doesn't work in box::use({package}[...]) 
+#don't know why ? but need to load using library() otherwise error when upload to shinyapps.io 
   #, DescTools[RoundTo]
   #, logger[...]
 )
-
-
-#doesn't work in box::use({package}[...]) 
-#works when use {ggplot2}, i.e. box::use(ggplot2[...])
-#don't know why ? but need to load using library() otherwise error when upload to shinyapps.io 
-library(DescTools)
-library(logger)
 
 
 
@@ -66,10 +61,10 @@ coldf <- function(VAR, VALS){
   #BREAKS BASED ON QUANTILES!! 
     quant_perc <- c(0.2, 0.4, 0.6, 0.8)
     RNDVAL <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$RNDVAL 
-    breaks <- c(0, RoundTo(quantile(x = VALS, prob = quant_perc, na.rm = TRUE), RNDVAL), Inf)
+    breaks <- c(0, DescTools::RoundTo(quantile(x = VALS, prob = quant_perc, na.rm = TRUE), RNDVAL), Inf)
     if (length(unique(breaks)) != 6){
-      min <- max(RoundTo(min(VALS - RNDVAL, na.rm = TRUE), RNDVAL), 0)
-      max <-     RoundTo(max(VALS + RNDVAL, na.rm = TRUE), RNDVAL)
+      min <- max(DescTools::RoundTo(min(VALS - RNDVAL, na.rm = TRUE), RNDVAL), 0)
+      max <-     DescTools::RoundTo(max(VALS + RNDVAL, na.rm = TRUE), RNDVAL)
       sec <- max/5
       breaks <- c(min, min+sec, min+sec*2, min+sec*3, min+sec*4, min+sec*5)
     }
@@ -255,7 +250,7 @@ create_map <- function(DT, VAR){
       , legend.text = element_text(margin = margin(t=0, r=0, b=0, l=1)) #, family  = "Ubuntu Mono")
       , legend.position = "right"
     )
-  log_info(glue("Create Hex Map for {VAR}"))
+  logger::log_info(glue("Create Hex Map for {VAR}"))
   return(p)
 }
 
