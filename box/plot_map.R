@@ -10,8 +10,11 @@ box::use(
   , stats[quantile]
   , glue[glue]
   , typed[...]
+  , logger[...]
   , ./meta
 )
+
+
 
 
 #' Variable Type 
@@ -186,8 +189,6 @@ hexbanner <- function(VAR, PLOTDF, COLDF){
 }
 
 
-
-
 #' Create Hex Map 
 #' @param DT 
 #' @param VAR 
@@ -216,40 +217,45 @@ create_map <- function(DT, VAR){
   toPlot_centers <- merge(meta$shp_hex_centers, toPlot)
   toPlot_shp     <- merge(meta$shp_hex        , toPlot)
   
-  ggplot(data = toPlot_shp) + 
+  p <- ggplot(data = toPlot_shp) + 
     geom_polygon(aes(x = long, y = lat, group = group, fill = colgroup), color = "white" ) +
     geom_text(
       data = toPlot_centers
       , aes(x=x, y=y+5, label=state_abb)
       , color = toPlot_centers$font
       , fontface = "bold"
+      , family  = "Ubuntu Mono"
     ) +
     geom_text(
       data = toPlot_centers
       , aes(x=x, y=y-6, label=display)
       , color = toPlot_centers$font
       , size = 2.5
+      , family  = "Ubuntu Mono"
     )+
     facet_grid( . ~ USA_val) + 
     scale_fill_manual(
-      name = NULL
+        name = NULL
       , values = coldf$colors[[1]]
       , drop = FALSE #show all categories
-      , guide = guide_legend(label.position = "bottom", label.hjust = 0.5, keywidth = 6)
+      , guide = guide_legend(label.position = "right", label.hjust = 0, keywidth = 1.5)
     ) +
+    scale_x_continuous(expand = c(0, 0)) +
+    scale_y_continuous(expand = c(0, 5)) + 
     coord_fixed() + 
     theme_void() + 
     labs(title = plottitle) + 
     theme(
-      plot.title = element_text(face = "bold", hjust = 0.5, margin = margin(0, 0, 10, 0))
-      , plot.subtitle = element_text(hjust = 0.5, size = 5)
-      , strip.text.x  = element_text(size = 12, color = USA_font, face = "bold", margin = margin(3, 0, 3, 0))
+        plot.title = element_text(face = "bold", hjust = 0.5, margin = margin(t=3, r=0, b=6, l=0), family = "Ubuntu")
+      , strip.text.x  = element_text(size = 12, color = USA_font, face = "bold", margin = margin(t=3, r=0, b=3, l=0), family = "Ubuntu")
       , strip.background.x = element_rect(fill = USA_col, color = USA_col)
       , legend.spacing.x = unit(0, 'cm')
-      , legend.margin=margin(t = .5, unit='cm')
-      , legend.position = "bottom"
+      , legend.margin=margin(t=0, r=0, b=0, l=0) 
+      , legend.text = element_text(margin = margin(t=0, r=0, b=0, l=1), family  = "Ubuntu Mono")
+      , legend.position = "right"
     )
-  
+  log_info(glue("Create Hex Map for {VAR}"))
+  return(p)
 }
 
 
