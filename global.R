@@ -8,15 +8,15 @@ library(ggplot2)
 box::use(
     magrittr[`%>%`]
   , glue[glue]
-  , box/meta 
-  , box/plot_map
   , box/data
+  , box/meta
+  , box/plot_map
 )
 
 
-DT <- readRDS("state.RDS")
-default_width  <- 8
-default_height <- 5.25
-extrafont::loadfonts(device = "win", quiet = TRUE) #loads fonts 
+# DT <- readRDS("state.RDS")
+# default_width  <- 8
+# default_height <- 5.25
+#extrafont::loadfonts(device = "win", quiet = TRUE) #loads fonts 
 
 
