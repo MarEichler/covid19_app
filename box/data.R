@@ -165,13 +165,13 @@ create_dt  <- function(RAWDT, POPDT, LEV){
   #start calculating proportional columns 
   logger::log_info("{LEV} creating PROP columns")
   data.table::setDT(DT)[,`:=`
-            (   C_CUM_P100K = calc_p100K(C_CUM, POP)
-              , C_CUM_PC    = calc_pc(   C_CUM, POP)
+            (  # C_CUM_P100K = calc_p100K(C_CUM, POP)
+                C_CUM_PC    = calc_pc(   C_CUM, POP)
               , C_NEW_P100K = calc_p100K(C_NEW, POP)
               #, C_NEW_PC    = calc_pc(   C_NEW, POP)
               , C_MA7_P100K = calc_p100K(C_MA7, POP)
               #, C_MA7_PC    = calc_pc(   C_MA7, POP)
-              , D_CUM_P100K = calc_p100K(D_CUM, POP)
+              #, D_CUM_P100K = calc_p100K(D_CUM, POP)
               , D_CUM_PC    = calc_pc(   D_CUM, POP)
               , D_NEW_P100K = calc_p100K(D_NEW, POP)
               #, D_NEW_PC    = calc_pc(   D_NEW, POP)
@@ -187,7 +187,10 @@ create_dt  <- function(RAWDT, POPDT, LEV){
 #####################################
 
 #' Pull/Create Data Tables 
-get_data <- function(POPSTATE, POPCNTY){
+get_data <- function(
+    POPSTATE
+  #, POPCNTY
+  ){
   rawDT     <- raw_data()
   
   out <- list()

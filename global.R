@@ -1,14 +1,12 @@
 # R version 4.1.1 (2021-08-10) -- "Kick Things"
 
+#######################
+# PACKAGES ############
+
 library(shiny)
 library(shinycssloaders)
 library(shinyWidgets)
 library(ggplot2)
-
-
-library(data.table)
-
-library(readr)
 
 box::use(
     magrittr[`%>%`]
@@ -18,18 +16,39 @@ box::use(
   , box/plot_map
 )
 
-link_jh_cases  <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv"
-# data_dot <- vroom::vroom(link_jh_cases)
-# data.table::setDT(data_dot)
+#######################
+# FONTS ###############
 
-DT_lst <- data$get_data(POPSTATE = readRDS("data/pop_state.RDS"), POPCNTY = readRDS("data/pop_cnty.RDS") )
+##when testing on my machine because I'm on Windooze 
+if (Sys.info()[['sysname']] == "Windows"){ extrafont::loadfonts(device = "win", quiet = TRUE) }
 
+##when on shinyapps.io (linux)
+if (Sys.info()[['sysname']] == "Linux"){
+  dir.create('~/.fonts')
+  file.copy("fonts/Ubuntu.ttf"     , "~/.fonts")
+  file.copy("fonts/Ubuntu Mono.ttf", "~/.fonts")
+  system('fc-cache -f ~/.fonts')
+}
+
+# font_name <- "Ubuntu"
+# font_mono <- "Ubuntu Mono"
+
+
+#######################
+# DATA ################
+
+DT_lst <- data$get_data(
+    POPSTATE = readRDS("data/pop_state.RDS")
+ # , POPCNTY = readRDS("data/pop_cnty.RDS")
+  )
 DATA_state <- DT_lst$stateDT
 
+# DATA_state <- readRDS("state.RDS")
 
-#DATA_state <- readRDS("data/state.RDS")
-default_width  <- 8
-default_height <- 5.25
-#extrafont::loadfonts(device = "win", quiet = TRUE) #loads fonts 
+
+#######################
+# OTHER ###############
+
+
 
 

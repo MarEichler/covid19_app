@@ -28,16 +28,17 @@ vartype <-  function(VAR){
 #' @param VAL 
 #' @param VAR Character(1, ... = "Not Valid VAR" ~ . %in% meta$VAROPTS$VAR)
 plotval <- function(VAL , VAR){
-  TYPE <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR), ]$TYPE
-         if (TYPE == "p100k"){
-    out <- ifelse(VAL >  1.5, round(VAL, digits = 0), round(VAL, digits = 1))
-  } else if (TYPE == "count"){
-    out <- round(VAL, digits = 0)
-  } else if (TYPE == "pc") {
-    ACC <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$ACCURACY 
-    dig <- log(100/ACC, base = 10)
-    out <- round(VAL, digits = dig)
-  }
+  TYPE  <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR), ]$TYPE
+  ACC   <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$ACCURACY 
+  GROUP <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$GROUP 
+  DIG   <- log(1/ACC, base = 10)
+  
+       if (TYPE == "p100k" & GROUP ==  "C" ){out <- ifelse(VAL <=  1.5, round(VAL, digits = DIG), round(VAL, digits = 1)) }
+  else if (TYPE == "p100k" & GROUP ==  "D" ){out <-                     round(VAL, digits = DIG)  }
+  else if (TYPE == "count"                 ){out <-                     round(VAL, digits = DIG)  }
+  else if (TYPE == "pc"                    ){
+    digp <- log(100/ACC, base = 10)
+                                             out <-                     round(VAL, digits = digp) }
   return(out)
 }
 
@@ -66,7 +67,7 @@ coldf <- function(VAR, VALS){
       min <- max(DescTools::RoundTo(min(VALS - RNDVAL, na.rm = TRUE), RNDVAL), 0)
       max <-     DescTools::RoundTo(max(VALS + RNDVAL, na.rm = TRUE), RNDVAL)
       sec <- max/5
-      breaks <- c(min, min+sec, min+sec*2, min+sec*3, min+sec*4, min+sec*5)
+      breaks <- c(-Inf, min+sec, min+sec*2, min+sec*3, min+sec*4, Inf)
     }
     coldf <- tribble(
       ~breaks, ~labels, ~colors, ~font
@@ -86,11 +87,14 @@ coldf <- function(VAR, VALS){
 #' @param VAL 
 #' @param VAR Character(1)
 displayval <-  function(VAL , VAR ){
-  TYPE <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR), ]$TYPE
-       if (TYPE == "p100k"){out <- ifelse(VAL >  1.5 | VAL == 0, comma(VAL, accuracy = 1), comma(VAL, accuracy = 0.1))}
-  else if (TYPE == "count"){out <- comma(VAL, accuracy = 1)}
-  else if (TYPE == "pc"   ){
-    ACC <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$ACCURACY 
+  TYPE  <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR), ]$TYPE
+  ACC   <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$ACCURACY 
+  GROUP <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$GROUP 
+  
+       if (TYPE == "p100k" & GROUP ==  "C" ){out <- ifelse(VAL <= 1.5 | VAL != 0, comma(VAL, accuracy = 0.1), comma(VAL, accuracy = 1)) }
+  else if (TYPE == "p100k" & GROUP ==  "D" ){out <- ifelse(             VAL != 0, comma(VAL, accuracy = ACC), comma(VAL, accuracy = 1)) }
+  else if (TYPE == "count"                 ){out <-                               comma(VAL, accuracy = ACC) }
+  else if (TYPE == "pc"                    ){
     out <- case_when(
         VAL == 0      ~ "0%"
       , VAL <  ACC/100 ~ paste0("<", percent(ACC/100, accuracy = ACC))
@@ -129,9 +133,9 @@ set_quant_labels <- function(BREAKS, VAR){
     ACC <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$ACCURACY 
     labels <- c(
         glue("<{comma(BREAKS[2], accuracy = ACC)}")
-      , glue( "{comma(BREAKS[2], accuracy = ACC)} - {comma(BREAKS[3], accuracy = ACC)}")
-      , glue( "{comma(BREAKS[3], accuracy = ACC)} - {comma(BREAKS[4], accuracy = ACC)}")
-      , glue( "{comma(BREAKS[4], accuracy = ACC)} - {comma(BREAKS[5], accuracy = ACC)}")
+      , glue( "{comma(BREAKS[2], accuracy = ACC)} - {comma(BREAKS[3]-ACC, accuracy = ACC)}")
+      , glue( "{comma(BREAKS[3], accuracy = ACC)} - {comma(BREAKS[4]-ACC, accuracy = ACC)}")
+      , glue( "{comma(BREAKS[4], accuracy = ACC)} - {comma(BREAKS[5]-ACC, accuracy = ACC)}")
       , glue( "{comma(BREAKS[5], accuracy = ACC)}+")
     )
   } #end if (TYPE == "p100k)
@@ -196,6 +200,10 @@ create_map <- function(DT, VAR){
   
   coldf <- coldf(VAR, VALS = subset[which(state_name != "United States"),]$val)
   
+  geom_text_size <- ifelse(VAR == "C_CUM", 2.25, 2.5)
+  # 3.88 is default size, GeomText$default_aes$size
+  
+  
   toPlot <- mutate(subset
                    , plotval  = plotval(val, VAR)
                    , colgroup = cut(plotval, coldf$breaks[[1]], coldf$labels[[1]], right = FALSE)
@@ -220,21 +228,21 @@ create_map <- function(DT, VAR){
       , aes(x=x, y=y+5, label=state_abb)
       , color = toPlot_centers$font
       , fontface = "bold"
-      #, family  = "Ubuntu Mono"
+      , family  = "Ubuntu Mono"
     ) +
     geom_text(
       data = toPlot_centers
       , aes(x=x, y=y-6, label=display)
       , color = toPlot_centers$font
-      , size = 2.5
-     # , family  = "Ubuntu Mono"
+      , size = geom_text_size
+      , family  = "Ubuntu Mono"
     )+
     facet_grid( . ~ USA_val) + 
     scale_fill_manual(
         name = NULL
       , values = coldf$colors[[1]]
       , drop = FALSE #show all categories
-      , guide = guide_legend(label.position = "right", label.hjust = 0, keywidth = 1.5)
+      , guide = guide_legend(label.position = "right", reverse = TRUE, label.hjust = 0, keywidth = 1.5)
     ) +
     scale_x_continuous(expand = c(0, 0)) +
     scale_y_continuous(expand = c(0, 5)) + 
@@ -242,13 +250,15 @@ create_map <- function(DT, VAR){
     theme_void() + 
     labs(title = plottitle) + 
     theme(
-        plot.title = element_text(face = "bold", hjust = 0.5, margin = margin(t=3, r=0, b=6, l=0))#, family = "Ubuntu")
-      , strip.text.x  = element_text(size = 12, color = USA_font, face = "bold", margin = margin(t=3, r=0, b=3, l=0)) #, family = "Ubuntu")
+        plot.title = element_text(face = "bold", hjust = 0.5, margin = margin(t=3, r=0, b=6, l=0), family = "Ubuntu")
+      , strip.text.x  = element_text(size = 12, color = USA_font, face = "bold", margin = margin(t=3, r=0, b=3, l=0), family = "Ubuntu")
       , strip.background.x = element_rect(fill = USA_col, color = USA_col)
       , legend.spacing.x = unit(0, 'cm')
       , legend.margin=margin(t=0, r=0, b=0, l=0) 
-      , legend.text = element_text(margin = margin(t=0, r=0, b=0, l=1)) #, family  = "Ubuntu Mono")
+      , legend.text = element_text(margin = margin(t=0, r=0, b=0, l=1), family  = "Ubuntu Mono")
       , legend.position = "right"
+      , plot.background  = element_rect(fill = "white", color = "white")
+      , panel.background = element_rect(fill = "white", color = "white")
     )
   logger::log_info(glue("Create Hex Map for {VAR}"))
   return(p)
