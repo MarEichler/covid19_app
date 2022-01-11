@@ -30,16 +30,11 @@ if (Sys.info()[['sysname']] == "Linux"){
   system('fc-cache -f ~/.fonts')
 }
 
-# font_name <- "Ubuntu"
-# font_mono <- "Ubuntu Mono"
-
 
 #######################
 # DATA ################
 
 DATA_state <- data$get_data(POPSTATE = readRDS("data/pop_state.RDS"))
-
-
 # DATA_state <- readRDS("state.RDS")
 
 

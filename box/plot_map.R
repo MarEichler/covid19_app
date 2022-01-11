@@ -28,7 +28,7 @@ vartype <-  function(VAR){
 #' @param VAL 
 #' @param VAR Character(1, ... = "Not Valid VAR" ~ . %in% meta$VAROPTS$VAR)
 plotval <- function(VAL , VAR){
-  TYPE  <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR), ]$TYPE
+  TYPE  <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$TYPE
   ACC   <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$ACCURACY 
   GROUP <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$GROUP 
   DIG   <- log(1/ACC, base = 10)
