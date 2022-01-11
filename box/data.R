@@ -21,6 +21,13 @@ link_jh_cases  <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/mas
 #' Link to CSV deaths data from John Hopkins 
 link_jh_deaths <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv"
 
+#OUR WORLD IN DATA GITHUB
+#SOURCE: https://github.com/owid/covid-19-data/tree/master/public/data/vaccinations
+# data pulled from CDC API: https://covid.cdc.gov/covid-data-tracker/COVIDData/getAjaxData?id=vaccination_data
+# CDC webpage https://covid.cdc.gov/covid-data-tracker/#vaccinations
+
+#' Link to CSV vaccines data from Our World in Data (OWID) 
+link_owid_vac <- "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/us_state_vaccinations.csv"
 
 
 #####################################
@@ -80,6 +87,42 @@ raw_data <- function(){
   return(DT)
 }
 
+
+####################################
+#' Return Data after pulled (Vaccine Data)
+pull_owid <- function(FILTER_NAMES){
+  DT00 <- vroom::vroom(link_owid_vac) 
+  data.table::setDT(DT00)
+  
+  cols_to_keep <- c(which(colnames(DT00) %in% c("location", "date", "people_vaccinated", "people_fully_vaccinated", "daily_vaccinations_raw", "daily_vaccinations")))
+  DT <- DT00[, ..cols_to_keep] 
+  data.table::setnames(
+      DT
+    , c("location"  , "date", "people_vaccinated", "people_fully_vaccinated", "daily_vaccinations_raw", "daily_vaccinations")
+    , c("state_name", "DATE", "V_pANY"           , "V_pFULL"                , "V_NEW"                 , "V_MA7")
+    , skip_absent = TRUE)
+  
+  #convert names to match URBNMAPR data 
+  data.table::setDT(DT)[, `:=` (state_name = ifelse(state_name == "Northern Mariana Islands", "Mariana Islands", state_name))]
+  data.table::setDT(DT)[, `:=` (state_name = ifelse(state_name == "Republic of Palau"       , "Palau"          , state_name))]
+  data.table::setDT(DT)[, `:=` (state_name = ifelse(state_name == "New York State"          , "New York"       , state_name))]
+  
+  #filter to only include specific geos 
+  DT <- DT[which(state_name %in% FILTER_NAMES)]
+  
+  #filter to include only dates >= 2021-01-12 (first day of data for states)
+  DT <- DT[which(DATE >= "2021-01-12")]
+  
+  #if NA, fill in with most recent value
+  DT[, `:=`
+     (   V_pANY  = zoo::na.locf(ifelse(DATE == "2021-01-12" & is.na(V_pANY ) == TRUE, 0, V_pANY ))
+       , V_pFULL = zoo::na.locf(ifelse(DATE == "2021-01-12" & is.na(V_pFULL) == TRUE, 0, V_pFULL))
+     ), by = state_name]
+  
+  return(DT)
+}
+
+
 ##############################
 # functions for state/county dt creation
 
@@ -126,36 +169,39 @@ calc_pc <- function(VAL, POP){
 #' @param POPDT 
 #' @param LEV 
 #' @examples
-create_dt  <- function(RAWDT, POPDT, LEV){
+create_dt  <- function(RAWDT, POPDT){
   DT <- RAWDT
   
   #order 
-  logger::log_info("{LEV} order columns")
+  logger::log_info("order columns")
   DT <- DT[DT[,do.call(order, .SD), .SDcols = c("state_name", "county_fips", "DATE")]]
   
-  if (LEV == "STATE"){
-    logger::log_info("{LEV} sum up by STATE level")
-    DT <- DT[, lapply(.SD, sum), by = c("state_name", "DATE"), .SDcols = c("C_CUM", "D_CUM")]
-    
-    usa <- DT[, lapply(.SD, sum), by = c("DATE"), .SDcols = c("C_CUM", "D_CUM")]
-    data.table::setDT(usa)[, `:=` (state_name = "United States")]
-    
-    DT <- rbind(usa, DT)
-  }
+  logger::log_info("sum up by STATE level")
+  DT <- DT[, lapply(.SD, sum), by = c("state_name", "DATE"), .SDcols = c("C_CUM", "D_CUM")]
+  usa <- DT[, lapply(.SD, sum), by = c("DATE"), .SDcols = c("C_CUM", "D_CUM")]
+  data.table::setDT(usa)[, `:=` (state_name = "United States")]
+  DT <- rbind(usa, DT)
+  
+  logger::log_info("add vaccine data")
+  DT_VAC <- pull_owid(FILTER_NAMES = unique(DT$state_name))
+  max_date <- min(max(DT$DATE), max(DT_VAC$DATE)) #determine 'max date' in case cases/deaths have different date in vaccine 
+  DT <- merge(DT, DT_VAC, all.x = TRUE)[which(DATE <= max_date)] 
+  attr(DT, 'sorted') <- NULL #remove sorting attributes, in order to merge with population info
+  
   
   #combine with population data 
-  logger::log_info("{LEV} merge raw dt with population data ")
+  logger::log_info("merge raw dt with population data ")
   DT <- merge(DT, POPDT, all.x = TRUE)
   
   #calculate new cases 
-  logger::log_info("{LEV} creating NEW columns")
+  logger::log_info("creating NEW columns")
   data.table::setDT(DT)[, `:=`
             (   C_NEW = calc_new(C_CUM, DATE)
               , D_NEW = calc_new(D_CUM, DATE)
             ), by = county_fips]
   
   #calculate 7day moving average 
-  logger::log_info("{LEV} creating MA7 columns")
+  logger::log_info("creating MA7 columns")
   data.table::setDT(DT)[, `:=`
             (   C_MA7 = c(rep(NA, 6), zoo::rollmean(C_NEW, k = 7, na.rm = TRUE))
               , D_MA7 = c(rep(NA, 6), zoo::rollmean(D_NEW, k = 7, na.rm = TRUE))
@@ -163,23 +209,23 @@ create_dt  <- function(RAWDT, POPDT, LEV){
   
   
   #start calculating proportional columns 
-  logger::log_info("{LEV} creating PROP columns")
+  logger::log_info("creating PROP columns")
   data.table::setDT(DT)[,`:=`
-            (  # C_CUM_P100K = calc_p100K(C_CUM, POP)
+            (  
                 C_CUM_PC    = calc_pc(   C_CUM, POP)
               , C_NEW_P100K = calc_p100K(C_NEW, POP)
-              #, C_NEW_PC    = calc_pc(   C_NEW, POP)
               , C_MA7_P100K = calc_p100K(C_MA7, POP)
-              #, C_MA7_PC    = calc_pc(   C_MA7, POP)
-              #, D_CUM_P100K = calc_p100K(D_CUM, POP)
               , D_CUM_PC    = calc_pc(   D_CUM, POP)
               , D_NEW_P100K = calc_p100K(D_NEW, POP)
-              #, D_NEW_PC    = calc_pc(   D_NEW, POP)
               , D_MA7_P100K = calc_p100K(D_MA7, POP)
-              #, D_MA7_PC    = calc_pc(   D_MA7, POP)
+              , D_FAT       = ifelse(C_CUM == 0, 0, (D_CUM/C_CUM))
+              , V_pANY_PC   = calc_pc(   V_pANY , POP) # not available for CNTY LEVEL, WILL NEED TO CHANGE IF ADD CNTY
+              , V_pFULL_PC  = calc_pc(   V_pFULL, POP) # not available for CNTY LEVEL, WILL NEED TO CHANGE IF ADD CNTY
+              , V_MA7_P100K = calc_p100K(V_MA7  , POP) # not available for CNTY LEVEL, WILL NEED TO CHANGE IF ADD CNTY
+              
             )]
   
-  logger::log_success("{LEV} complete creating DT")
+  logger::log_success("complete creating DT")
   return(DT)
 } #end create_dt 
 
@@ -187,16 +233,9 @@ create_dt  <- function(RAWDT, POPDT, LEV){
 #####################################
 
 #' Pull/Create Data Tables 
-get_data <- function(
-    POPSTATE
-  #, POPCNTY
-  ){
+get_data <- function(POPSTATE){
   rawDT     <- raw_data()
-  
-  out <- list()
-  #out$cntyDT  <- create_dt(rawDT, POPCNTY,  "CNTY")
-  out$stateDT <- create_dt(rawDT, POPSTATE, "STATE")
-  
+  out<- create_dt(rawDT, POPSTATE)
   return(out)
 }
 

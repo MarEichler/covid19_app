@@ -37,11 +37,8 @@ if (Sys.info()[['sysname']] == "Linux"){
 #######################
 # DATA ################
 
-DT_lst <- data$get_data(
-    POPSTATE = readRDS("data/pop_state.RDS")
- # , POPCNTY = readRDS("data/pop_cnty.RDS")
-  )
-DATA_state <- DT_lst$stateDT
+DATA_state <- data$get_data(POPSTATE = readRDS("data/pop_state.RDS"))
+
 
 # DATA_state <- readRDS("state.RDS")
 

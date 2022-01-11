@@ -9,8 +9,9 @@ mod_filters_UI <- function(id){
         inputId    = ns("metric"), 
         label      = "Metric", 
         choices    = list( #actual choices that will be used in server 
-          Cases  = meta$VAROPTS[which(meta$VAROPTS$GROUP == "C"),]$VAR, 
-          Deaths = meta$VAROPTS[which(meta$VAROPTS$GROUP == "D"),]$VAR
+          Cases    = meta$VAROPTS[which(meta$VAROPTS$GROUP == "C"),]$VAR, 
+          Deaths   = meta$VAROPTS[which(meta$VAROPTS$GROUP == "D"),]$VAR,
+          Vaccines = meta$VAROPTS[which(meta$VAROPTS$GROUP == "V"),]$VAR
         ), #end list<choices 
         choicesOpt = list(content = meta$VAROPTS$NAME)   #names to show in drop down 
       ) #end pickerInput 

@@ -34,7 +34,7 @@ plotval <- function(VAL , VAR){
   DIG   <- log(1/ACC, base = 10)
   
        if (TYPE == "p100k" & GROUP ==  "C" ){out <- ifelse(VAL <=  1.5, round(VAL, digits = DIG), round(VAL, digits = 1)) }
-  else if (TYPE == "p100k" & GROUP ==  "D" ){out <-                     round(VAL, digits = DIG)  }
+  else if (TYPE == "p100k" & GROUP !=  "C" ){out <-                     round(VAL, digits = DIG)  }
   else if (TYPE == "count"                 ){out <-                     round(VAL, digits = DIG)  }
   else if (TYPE == "pc"                    ){
     digp <- log(100/ACC, base = 10)
@@ -92,7 +92,7 @@ displayval <-  function(VAL , VAR ){
   GROUP <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$GROUP 
   
        if (TYPE == "p100k" & GROUP ==  "C" ){out <- ifelse(VAL <= 1.5 | VAL != 0, comma(VAL, accuracy = 0.1), comma(VAL, accuracy = 1)) }
-  else if (TYPE == "p100k" & GROUP ==  "D" ){out <- ifelse(             VAL != 0, comma(VAL, accuracy = ACC), comma(VAL, accuracy = 1)) }
+  else if (TYPE == "p100k" & GROUP !=  "C" ){out <- ifelse(             VAL != 0, comma(VAL, accuracy = ACC), comma(VAL, accuracy = 1)) }
   else if (TYPE == "count"                 ){out <-                               comma(VAL, accuracy = ACC) }
   else if (TYPE == "pc"                    ){
     out <- case_when(
