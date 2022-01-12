@@ -42,7 +42,7 @@ abb_state <- distinct(select(shp_state,                           state_abbv, st
 # web page: https://www.census.gov/data/datasets/time-series/demo/popest/2010s-state-total.html
 #csv: http://www2.census.gov/programs-surveys/popest/datasets/2010-2019/national/totals/nst-est2019-alldata.csv
 #Link to CSV state population data  (only for 50 states, DC, and PR)
-raw_state <- read_csv("./data/census_tables/nst-est2019-alldata.csv")
+raw_state <- read_csv("prep/data/census_tables/nst-est2019-alldata.csv")
 pop_state0 <- select( #50 States, DC, and PR = 52 items 
   filter(raw_state, SUMLEV == "010" | SUMLEV == "040")#filter if 010 = National or 040 = State or PR (remove region rows)
   , county_fips = STATE
@@ -55,7 +55,7 @@ pop_state0 <- select( #50 States, DC, and PR = 52 items
 #web page: https://www.census.gov/data/datasets/time-series/demo/popest/2010s-counties-total.html
 #csv: https://www2.census.gov/programs-surveys/popest/datasets/2010-2019/counties/totals/co-est2019-alldata.csv
 #Link to CSV county population data  (only for 50 states and DC)
-raw_pop   <- read_csv("./data/census_tables/co-est2019-alldata.csv")
+raw_pop   <- read_csv("prep/data/census_tables/co-est2019-alldata.csv")
 pop_cnty0 <- raw_pop %>%
   filter(COUNTY != "000") %>% #remove state values 
   mutate(county_fips = as.numeric(paste0(STATE, COUNTY))) %>% 
@@ -81,10 +81,10 @@ pop_cnty  <- bind_rows(pop_cnty0 , pop_terr, pop_state0[which(pop_state0$state_n
 #########################
 ## HEX MAP SHAPE FILES 
 
-shp_hex         <- read_csv("./data/hex.csv") %>%
+shp_hex         <- read_csv("prep/data/hex.csv") %>%
   rename(state_name = name) %>%
   mutate(state_name = ifelse(state_name == "Northern Mariana Islands", "Mariana Islands", state_name))
-shp_hex_centers <- read_csv("./data/hex_centers.csv") %>% 
+shp_hex_centers <- read_csv("prep/data/hex_centers.csv") %>% 
   rename(state_abb = id)  %>% 
   rename(state_name = name) %>% 
   mutate(state_name = ifelse(state_name == "Northern Mariana Islands", "Mariana Islands", state_name)) 
@@ -94,17 +94,17 @@ shp_hex_centers <- read_csv("./data/hex_centers.csv") %>%
 #' @export
 save_static_data <- function(){
   
-  saveRDS(shp_cnty , file = "./data/shp_cnty.RDS")
+  saveRDS(shp_cnty , file = "data/shp_cnty.RDS")
   log_success("Saved shp_cnty.RDS")
   
-  saveRDS(pop_state, file = "./data/pop_state.RDS")
+  saveRDS(pop_state, file = "data/pop_state.RDS")
   log_success("Saved pop_state.RDS")
-  saveRDS(pop_cnty , file = "./data/pop_cnty.RDS")
+  saveRDS(pop_cnty , file = "data/pop_cnty.RDS")
   log_success("Saved pop_cnty.RDS")
-  
-  saveRDS(shp_hex,          file = "./data/shp_hex.RDS")
+
+  saveRDS(shp_hex,          file = "data/shp_hex.RDS")
   log_success("Saved shp_hex.RDS")
-  saveRDS(shp_hex_centers , file = "./data/shp_hex_centers.RDS")
+  saveRDS(shp_hex_centers , file = "data/shp_hex_centers.RDS")
   log_success("Saved shp_hex_centers.RDS")
 }
 

@@ -3,8 +3,10 @@
 
 ## Running App from Scratch 
 
+### Create Static Data 
+
 ```r
-box::use(box/static_data)
+box::use(prep/static_data)
 static_data$save_static_data() 
 ```
 
