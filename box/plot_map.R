@@ -66,7 +66,7 @@ which_colors <- function(GROUP){
 #' @param VALS 
 #' @param TYPE 
 coldf <- function(VAR, VALS){
-  TYPE <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR), ]$TYPE
+  TYPE  <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$TYPE
   GROUP <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$GROUP
   
   if (VAR %in% c("C_MA7_P100K", "C_NEW_P100K")){
@@ -107,7 +107,7 @@ coldf <- function(VAR, VALS){
 #' @param VAL 
 #' @param VAR Character(1)
 displayval <-  function(VAL , VAR ){
-  TYPE  <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR), ]$TYPE
+  TYPE  <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$TYPE
   ACC   <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$ACCURACY 
   GROUP <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$GROUP 
   
