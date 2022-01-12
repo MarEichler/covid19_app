@@ -33,9 +33,9 @@ plotval <- function(VAL , VAR){
   GROUP <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$GROUP 
   DIG   <- log(1/ACC, base = 10)
   
-       if (TYPE == "p100k" & GROUP ==  "C" ){out <- ifelse(VAL <=  1.5, round(VAL, digits = DIG), round(VAL, digits = 1)) }
-  else if (TYPE == "p100k" & GROUP !=  "C" ){out <-                     round(VAL, digits = DIG)  }
-  else if (TYPE == "count"                 ){out <-                     round(VAL, digits = DIG)  }
+       if (TYPE == "p100k" & GROUP ==  "C" ){out <- ifelse(VAL > 1.5, round(VAL, digits = DIG), round(VAL, digits = 1)) }
+  else if (TYPE == "p100k" & GROUP !=  "C" ){out <-                   round(VAL, digits = DIG)  }
+  else if (TYPE == "count"                 ){out <-                   round(VAL, digits = DIG)  }
   else if (TYPE == "pc"                    ){
     digp <- log(100/ACC, base = 10)
                                              out <-                     round(VAL, digits = digp) }
@@ -43,12 +43,32 @@ plotval <- function(VAL , VAR){
 }
 
 
+#' Set Colors 
+#' @param GROUP 
+which_colors <- function(GROUP){
+  if (GROUP == "C"){
+    fill <- c("#2D1160FF", "#721F81FF", "#A93270"  , "#F1605DFF", "#FEAF77FF") #viridis::magma(n=7)[2:6]
+    font <- c("white"    , "white"    , "white"    , "black"    , "black")
+  } else if (GROUP == "D"){
+    fill <- c("#440154FF", "#3B528BFF", "#26A6A2"  , "#5DC863FF", "#FDE725FF") #viridis::viridis(n=5)
+    font <- c("white"    , "white"    , "black"    , "black"    , "black")
+  } else if (GROUP == "V"){
+    fill <- c("#342346FF", "#40498EFF", "#2F7092"  , "#38AAACFF", "#78D6AEFF") #viridis::mako(n=7)[2:6]
+    font <- c("white"    , "white"    , "white"    , "black"    , "black") }
+  return(list(fill = fill, font = font))
+} #end of which_colors function 
+#check to make sure middle value has at least 6:1 contrast
+#https://webaim.org/resources/contrastchecker/
+#https://www.color-blindness.com/coblis-color-blindness-simulator/
+
 #' Color DF with breaks, labels, colors 
 #' @param VAR 
 #' @param VALS 
 #' @param TYPE 
 coldf <- function(VAR, VALS){
   TYPE <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR), ]$TYPE
+  GROUP <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$GROUP
+  
   if (VAR %in% c("C_MA7_P100K", "C_NEW_P100K")){
   #SET BREAKS!!
     coldf <- tribble(
@@ -73,8 +93,8 @@ coldf <- function(VAR, VALS){
       ~breaks, ~labels, ~colors, ~font
       , breaks 
       , set_quant_labels(breaks, VAR)
-      , c("#51A09E", "#EFC637"      , "#E38D2C"     , "#A23520"          , "#87216B")
-      , c("black"  ,  "black"       , "black"       , "white"            , "white")
+      , which_colors(GROUP)$fill
+      , which_colors(GROUP)$font
     )
   } #end if/else set breaks/quantile breaks 
   
@@ -91,12 +111,12 @@ displayval <-  function(VAL , VAR ){
   ACC   <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$ACCURACY 
   GROUP <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$GROUP 
   
-       if (TYPE == "p100k" & GROUP ==  "C" ){out <- ifelse(VAL <= 1.5 | VAL != 0, comma(VAL, accuracy = 0.1), comma(VAL, accuracy = 1)) }
-  else if (TYPE == "p100k" & GROUP !=  "C" ){out <- ifelse(             VAL != 0, comma(VAL, accuracy = ACC), comma(VAL, accuracy = 1)) }
-  else if (TYPE == "count"                 ){out <-                               comma(VAL, accuracy = ACC) }
+       if (TYPE == "p100k" & GROUP ==  "C" ){out <- ifelse(VAL > 1.5 | VAL == 0, comma(VAL, accuracy = ACC), comma(VAL, accuracy = 0.1)) }
+  else if (TYPE == "p100k" & GROUP !=  "C" ){out <- ifelse(            VAL != 0, comma(VAL, accuracy = ACC), comma(VAL, accuracy = 1  )) }
+  else if (TYPE == "count"                 ){out <- ifelse(            VAL != 0, comma(VAL, accuracy = ACC), comma(VAL, accuracy = 1  )) }
   else if (TYPE == "pc"                    ){
     out <- case_when(
-        VAL == 0      ~ "0%"
+        VAL == 0       ~ "0%"
       , VAL <  ACC/100 ~ paste0("<", percent(ACC/100, accuracy = ACC))
       , VAL >= ACC/100 ~ percent(VAL, accuracy = ACC) 
     )
