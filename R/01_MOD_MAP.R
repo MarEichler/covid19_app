@@ -6,8 +6,6 @@ map_UI <- function(id) {
     sidebarLayout(
       mod_filters_UI(ns("var")), 
       mainPanel(
-        #width = 8, 
-        #plotOutput(ns("map"), width = "100%") %>% withSpinner() 
         imageOutput(ns("map"), width = "100%") %>% withSpinner()
       ) #end mainPanel 
     ) #end sidebarLayout
@@ -17,11 +15,17 @@ map_UI <- function(id) {
 
 map_Server <- function(id) {
   moduleServer(id, function(input, output, session) {
-    var <- mod_filters_Server("var")
+    var <- mod_filters_Server("var", ONEDATE = TRUE)
     
-    p <- reactive({ plot_map$create_map( DATA_state, var$metric() )  })
+    data <- reactive({ 
+      req( var$date() )
+      plot_map$PlotDT_map( DT = DATA_state, VAR = var$metric(), INDATE = var$date() ) 
+    })
+    
+    p <- reactive({ plot_map$create_map( DT = data()$DT, VAR = data()$VAR )  })
 
     output$map <- renderImage({
+      
       plotit <- p()
       out_width   <- session$clientData[[glue("output_{id}-map_width" )]]
       outfile <- tempfile(fileext = ".png")
@@ -33,7 +37,9 @@ map_Server <- function(id) {
         , contentType = "image/png"
         , alt         = "alt text palce holder"
       )
+      
     }, deleteFile = TRUE) #end renderImage<output$map
+    
     
     
   }) #end moduleServer 

@@ -209,30 +209,41 @@ hexbanner <- function(VAR, PLOTDF, COLDF){
 }
 
 
-#' Create Hex Map 
+#' Subset main DT for plot data 
 #' @param DT 
 #' @param VAR 
+#' @param INDATE 
 #' @export
-#' @examples
-create_map <- function(DT, VAR){
+PlotDT_map <- function(DT, VAR, INDATE){
   
-  subset <- select(filter(DT, DATE == max(DATE)), DATE, val = all_of(VAR), state_name)
+  filter_date <- ifelse(is.na(INDATE) == TRUE, max(DT$DATE), INDATE)
+  subset <- select(filter(DT, DATE == filter_date), DATE, val = all_of(VAR), state_name)
+  DT <- mutate(subset, plotval  = plotval(val, VAR), display  = displayval(plotval, VAR)) 
+  return(list(
+      DT   = DT
+    , VAR  = VAR
+    , NAME = meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$NAME 
+    , DATE = filter_date
+  ))
   
-  coldf <- coldf(VAR, VALS = subset[which(state_name != "United States"),]$val)
+}
+
+
+#' Create Hex Map with Data  
+#' @param DT 
+#' @param VAR 
+create_mapWDATA <- function(DT, VAR){
+  
+  coldf <- coldf(VAR, VALS = DT[which(state_name != "United States"),]$val)
   
   geom_text_size <- ifelse(VAR == "C_CUM", 2.25, 2.5)
   # 3.88 is default size, GeomText$default_aes$size
   
-  
-  toPlot <- mutate(subset
-                   , plotval  = plotval(val, VAR)
+  toPlot <- mutate(DT
                    , colgroup = cut(plotval, coldf$breaks[[1]], coldf$labels[[1]], right = FALSE)
                    , font     = fontcol(colgroup, coldf)
-                   , display  = displayval(plotval, VAR)
-  ) %>% 
-    mutate(
-      USA_val  = paste0("National US value: ", .[which(.$state_name == "United States"),]$display)
-    ) 
+                   , USA_val  = paste0("National US value: ", DT[which(DT$state_name == "United States"),]$display)
+  )
   
   USA_col      <- hexbanner(VAR, toPlot, coldf)[[1]]
   USA_font     <- hexbanner(VAR, toPlot, coldf)[[2]]
@@ -270,9 +281,48 @@ create_map <- function(DT, VAR){
     theme_void() + 
     labs(title = plottitle) + 
     theme(
-        plot.title = element_text(face = "bold", hjust = 0.5, margin = margin(t=3, r=0, b=6, l=0), family = "Ubuntu")
+      plot.title = element_text(face = "bold", hjust = 0.5, margin = margin(t=3, r=0, b=6, l=0), family = "Ubuntu")
       , strip.text.x  = element_text(size = 12, color = USA_font, face = "bold", margin = margin(t=3, r=0, b=3, l=0), family = "Ubuntu")
       , strip.background.x = element_rect(fill = USA_col, color = USA_col)
+      , legend.spacing.x = unit(0, 'cm')
+      , legend.margin=margin(t=0, r=0, b=0, l=0) 
+      , legend.text = element_text(margin = margin(t=0, r=0, b=0, l=1), family  = "Ubuntu Mono")
+      , legend.position = "right"
+      , plot.background  = element_rect(fill = "white", color = "white")
+      , panel.background = element_rect(fill = "white", color = "white")
+    )
+  logger::log_info(glue("Create BLANK Hex Map for {VAR}"))
+  return(p)
+}
+
+
+#' Create Hex Map with Data  
+#' @param DT 
+#' @param VAR 
+#' @examples
+create_mapNODATA <- function(DT, VAR){
+  
+  plottitle <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$NAME
+  toPlot_centers <- meta$shp_hex_centers
+  toPlot_shp     <- meta$shp_hex 
+  
+  p <- ggplot(data = toPlot_shp) + 
+    geom_polygon(aes(x = long, y = lat, group = group), fill = "grey70", color = "white" ) +
+    geom_text(
+      data = toPlot_centers
+      , aes(x=x, y=y+5, label=state_abb)
+      , color = "black"
+      , fontface = "bold"
+      , family  = "Ubuntu Mono"
+    ) +
+    scale_x_continuous(expand = c(0, 0)) +
+    scale_y_continuous(expand = c(0, 5)) + 
+    coord_fixed() + 
+    theme_void() + 
+    labs(title = plottitle, subtitle = "Data is unavailable for this metric on this date") + 
+    theme(
+        plot.title    = element_text(face = "bold",   hjust = 0.5, margin = margin(t=3, r=0, b=6, l=0), family = "Ubuntu")
+      , plot.subtitle = element_text(face = "italic", hjust = 0.5, margin = margin(t=3, r=0, b=6, l=0), family = "Ubuntu")
       , legend.spacing.x = unit(0, 'cm')
       , legend.margin=margin(t=0, r=0, b=0, l=0) 
       , legend.text = element_text(margin = margin(t=0, r=0, b=0, l=1), family  = "Ubuntu Mono")
@@ -283,5 +333,90 @@ create_map <- function(DT, VAR){
   logger::log_info(glue("Create Hex Map for {VAR}"))
   return(p)
 }
+
+
+#' Create Hex Map 
+#' @param DT 
+#' @param VAR 
+#' @export
+#' @examples
+create_map <- function(DT, VAR){
+  
+  if ( nrow(tidyr::drop_na(DT)) <= 1){
+    p <- create_mapNODATA(DT, VAR)
+  } else {
+    p <- create_mapWDATA(DT, VAR)
+  }
+  
+  return(p)
+}
+
+#' #' Create Hex Map 
+#' #' @param DT 
+#' #' @param VAR 
+#' #' @export
+#' #' @examples
+#' create_map <- function(DT, VAR){
+#'   
+#'   coldf <- coldf(VAR, VALS = DT[which(state_name != "United States"),]$val)
+#'   
+#'   geom_text_size <- ifelse(VAR == "C_CUM", 2.25, 2.5)
+#'   # 3.88 is default size, GeomText$default_aes$size
+#'   
+#'   toPlot <- mutate(DT
+#'                    , colgroup = cut(plotval, coldf$breaks[[1]], coldf$labels[[1]], right = FALSE)
+#'                    , font     = fontcol(colgroup, coldf)
+#'                    , USA_val  = paste0("National US value: ", DT[which(DT$state_name == "United States"),]$display)
+#'   )
+#'   
+#'   USA_col      <- hexbanner(VAR, toPlot, coldf)[[1]]
+#'   USA_font     <- hexbanner(VAR, toPlot, coldf)[[2]]
+#'   
+#'   plottitle <- hextitle(VAR, toPlot$DATE[1])
+#'   toPlot_centers <- merge(meta$shp_hex_centers, toPlot)
+#'   toPlot_shp     <- merge(meta$shp_hex        , toPlot)
+#'   
+#'   p <- ggplot(data = toPlot_shp) + 
+#'     geom_polygon(aes(x = long, y = lat, group = group, fill = colgroup), color = "white" ) +
+#'     geom_text(
+#'       data = toPlot_centers
+#'       , aes(x=x, y=y+5, label=state_abb)
+#'       , color = toPlot_centers$font
+#'       , fontface = "bold"
+#'       , family  = "Ubuntu Mono"
+#'     ) +
+#'     geom_text(
+#'       data = toPlot_centers
+#'       , aes(x=x, y=y-6, label=display)
+#'       , color = toPlot_centers$font
+#'       , size = geom_text_size
+#'       , family  = "Ubuntu Mono"
+#'     )+
+#'     facet_grid( . ~ USA_val) + 
+#'     scale_fill_manual(
+#'         name = NULL
+#'       , values = coldf$colors[[1]]
+#'       , drop = FALSE #show all categories
+#'       , guide = guide_legend(label.position = "right", reverse = TRUE, label.hjust = 0, keywidth = 1.5)
+#'     ) +
+#'     scale_x_continuous(expand = c(0, 0)) +
+#'     scale_y_continuous(expand = c(0, 5)) + 
+#'     coord_fixed() + 
+#'     theme_void() + 
+#'     labs(title = plottitle) + 
+#'     theme(
+#'         plot.title = element_text(face = "bold", hjust = 0.5, margin = margin(t=3, r=0, b=6, l=0), family = "Ubuntu")
+#'       , strip.text.x  = element_text(size = 12, color = USA_font, face = "bold", margin = margin(t=3, r=0, b=3, l=0), family = "Ubuntu")
+#'       , strip.background.x = element_rect(fill = USA_col, color = USA_col)
+#'       , legend.spacing.x = unit(0, 'cm')
+#'       , legend.margin=margin(t=0, r=0, b=0, l=0) 
+#'       , legend.text = element_text(margin = margin(t=0, r=0, b=0, l=1), family  = "Ubuntu Mono")
+#'       , legend.position = "right"
+#'       , plot.background  = element_rect(fill = "white", color = "white")
+#'       , panel.background = element_rect(fill = "white", color = "white")
+#'     )
+#'   logger::log_info(glue("Create Hex Map for {VAR}"))
+#'   return(p)
+#' }
 
 

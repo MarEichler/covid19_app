@@ -35,7 +35,10 @@ if (Sys.info()[['sysname']] == "Linux"){
 # DATA ################
 
 DATA_state <- data$get_data(POPSTATE = readRDS("data/pop_state.RDS"))
-# DATA_state <- readRDS("state.RDS")
+#DATA_state <- readRDS("zzIGNORE/state.RDS")
+
+DATE_min <- as.Date("2020-01-22")
+DATE_max <- max(DATA_state$DATE, na.rm = TRUE)
 
 
 #######################
