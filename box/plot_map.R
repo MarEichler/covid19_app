@@ -38,7 +38,7 @@ plotval <- function(VAL , VAR){
   else if (TYPE == "count"                 ){out <-                   round(VAL, digits = DIG)  }
   else if (TYPE == "pc"                    ){
     digp <- log(100/ACC, base = 10)
-                                             out <-                     round(VAL, digits = digp) }
+                                             out <-                   round(VAL, digits = digp) }
   return(out)
 }
 
@@ -291,7 +291,7 @@ create_mapWDATA <- function(DT, VAR){
       , plot.background  = element_rect(fill = "white", color = "white")
       , panel.background = element_rect(fill = "white", color = "white")
     )
-  logger::log_info(glue("Create BLANK Hex Map for {VAR}"))
+  logger::log_info(glue("Create Hex Map for {VAR}"))
   return(p)
 }
 
@@ -330,7 +330,7 @@ create_mapNODATA <- function(DT, VAR){
       , plot.background  = element_rect(fill = "white", color = "white")
       , panel.background = element_rect(fill = "white", color = "white")
     )
-  logger::log_info(glue("Create Hex Map for {VAR}"))
+  logger::log_info(glue("Create BLANK Hex Map for {VAR}"))
   return(p)
 }
 

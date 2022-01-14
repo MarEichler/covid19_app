@@ -6,7 +6,20 @@ map_UI <- function(id) {
     sidebarLayout(
       mod_filters_UI(ns("var")), 
       mainPanel(
-        imageOutput(ns("map"), width = "100%") %>% withSpinner()
+        tabsetPanel(type = "tabs", id = "tabsetpanel_map", selected = 1, #SELECT TAB 
+          tabPanel(
+            title = "Hex Map",  
+            value = 1, 
+            br(), 
+            imageOutput(ns("map"), width = "98%", height = "98%") %>% withSpinner()
+            ), #end tabPanle<Hex Map
+          tabPanel(
+            title = "Table", 
+            value = 2, 
+            br(), 
+            DTOutput(ns("table"), width = "98%") %>% withSpinner()
+            ) #end tabPanel<Table
+        ) #end tabsetPanel<tabsetpanle_map
       ) #end mainPanel 
     ) #end sidebarLayout
   ) #end tagList 
@@ -15,17 +28,21 @@ map_UI <- function(id) {
 
 map_Server <- function(id) {
   moduleServer(id, function(input, output, session) {
+    
+    # variables from mod_filters_Server 
     var <- mod_filters_Server("var", ONEDATE = TRUE)
     
+    # subset data needed 
     data <- reactive({ 
       req( var$date() )
       plot_map$PlotDT_map( DT = DATA_state, VAR = var$metric(), INDATE = var$date() ) 
-    })
+    }) #end reactive<data
     
-    p <- reactive({ plot_map$create_map( DT = data()$DT, VAR = data()$VAR )  })
-
+    # create plot 
+    p <- reactive({ plot_map$create_map( DT = data()$DT, VAR = data()$VAR )  }) #end reactive<p
+    
+    # create image 
     output$map <- renderImage({
-      
       plotit <- p()
       out_width   <- session$clientData[[glue("output_{id}-map_width" )]]
       outfile <- tempfile(fileext = ".png")
@@ -37,8 +54,14 @@ map_Server <- function(id) {
         , contentType = "image/png"
         , alt         = "alt text palce holder"
       )
-      
     }, deleteFile = TRUE) #end renderImage<output$map
+    
+    
+    output$table <- renderDT({
+      
+     table$map_table(DT = data()$DT, VAR = data()$VAR )
+      
+    }) #end renderDT<output$table
     
     
     
