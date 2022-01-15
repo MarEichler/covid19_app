@@ -2,11 +2,12 @@
 #doesn't work in box::use({package}[...]) 
 #works when use {ggplot2}, i.e. box::use(ggplot2[...])
 #don't know why ? when use function use {package}::function()
-# box::use(
-#     lubridate[mdy]
-#   , data.table[...]
-#   , logger[...]
-# )
+box::use(
+    glue[glue]
+  # , lubridate[mdy]
+  # , data.table[...]
+  # , logger[...]
+)
 
 
 ###########################
@@ -40,7 +41,7 @@ link_owid_vac <- "https://raw.githubusercontent.com/owid/covid-19-data/master/pu
 pull_JH <- function(LINK , TYPE){
   # LOAD IN DATA 
   #DT00 <- data.table::fread(LINK) #CANNOT GET fread() to work, when push to shinyapps.io get 'error' (DON'T KNOW WHY???)
-  DT00 <- vroom::vroom(LINK)
+  DT00 <- vroom::vroom(LINK, show_col_types = FALSE)
   data.table::setDT(DT00)
   
   # KEEP SPECIFIC COLUMNS AND RENAME 
@@ -91,7 +92,7 @@ raw_data <- function(){
 ####################################
 #' Return Data after pulled (Vaccine Data)
 pull_owid <- function(FILTER_NAMES){
-  DT00 <- vroom::vroom(link_owid_vac) 
+  DT00 <- vroom::vroom(link_owid_vac, show_col_types = FALSE) 
   data.table::setDT(DT00)
   
   cols_to_keep <- c(which(colnames(DT00) %in% c("location", "date", "people_vaccinated", "people_fully_vaccinated", "daily_vaccinations_raw", "daily_vaccinations")))
@@ -233,6 +234,7 @@ create_dt  <- function(RAWDT, POPDT){
 #####################################
 
 #' Pull/Create Data Tables 
+#' @param POPSTATE 
 get_data <- function(POPSTATE){
   rawDT     <- raw_data()
   out<- create_dt(rawDT, POPSTATE)
@@ -240,4 +242,31 @@ get_data <- function(POPSTATE){
 }
 
 
-
+#' Load Data 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+load_data <- function(){
+  
+  now_datetime <- lubridate::with_tz(Sys.time(), tzone = "America/Los_Angeles")
+  logger::log_info("now_datetime: {now_datetime} {format(now_datetime, '%Z')}")
+  
+  run_date     <- readRDS("data/run_date.RDS")
+  logger::log_info("run_date    : {run_date} {    format(run_date    , '%Z')}")
+  
+  if (now_datetime < run_date ){
+    logger::log_info("used data in folder")
+    DATA_state <- readRDS("data/DATA_state.RDS")
+  } else {
+    logger::log_info("pull data from JH github and update data in the folder")
+    DATA_state <- get_data(POPSTATE = readRDS("data/pop_state.RDS"))
+    saveRDS(DATA_state, "data/DATA_state.RDS")
+    run_date <- as.POSIXct(glue("{as.Date(format(now_datetime, '%Y-%m-%d'))+1} 00:01:00 {format(now_datetime, '%Z')}"))
+    saveRDS(run_date, "data/run_date.RDS")
+    logger::log_info("new run_date: {run_date}")
+  } #end if (now_datetime < run_date )
+  
+  return(DATA_state)
+} #end load_data

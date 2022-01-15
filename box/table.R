@@ -2,6 +2,7 @@
 box::use(
     glue[glue]
   , DT[...]
+  , dplyr[mutate, arrange]
   , ./meta
 )
 
@@ -20,13 +21,19 @@ map_table <- function(DT, VAR){
   
   cols_names_old <- c("state_name", "val")
   cols_names_new <- c("Geography Name", NAME)
-  toShow <- DT[, c("state_name", "val")]
+  
+  toShow <- DT[which(state_name %in% meta$GEOnames), c("state_name" , "val")] %>% 
+    mutate(state_name = factor(state_name, levels = meta$GEOnames)) %>%
+    arrange(state_name)
+  
   data.table::setnames(toShow, cols_names_old, cols_names_new, skip_absent = TRUE)
   
-       if (TYPE == "p100k" & GROUP ==  "C" ){out <- datatable(toShow) %>% DT::formatRound( 2, digits = 1  , mark = ",") } 
-  else if (TYPE == "p100k" & GROUP !=  "C" ){out <- datatable(toShow) %>% DT::formatRound( 2, digits = DIG, mark = ",") } 
-  else if (TYPE == "count"                 ){out <- datatable(toShow) %>% DT::formatRound( 2, digits = DIG, mark = ",") } 
-  else if (TYPE == "pc"                    ){out <- datatable(toShow) %>% formatPercentage(2, digits = DIG)            }
+  baseDT <- datatable(toShow)
+  
+       if (TYPE == "p100k" & GROUP ==  "C" ){out <- baseDT %>% DT::formatRound( 2, digits = 1  , mark = ",") } 
+  else if (TYPE == "p100k" & GROUP !=  "C" ){out <- baseDT %>% DT::formatRound( 2, digits = DIG, mark = ",") } 
+  else if (TYPE == "count"                 ){out <- baseDT %>% DT::formatRound( 2, digits = DIG, mark = ",") } 
+  else if (TYPE == "pc"                    ){out <- baseDT %>% formatPercentage(2, digits = DIG)             }
   logger::log_info(glue("Create Hex DT for {VAR}"))
   return(out)
 }
