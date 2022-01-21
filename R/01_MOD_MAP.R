@@ -6,16 +6,16 @@ map_UI <- function(id) {
     sidebarLayout(
       mod_filters_UI(ns("var")), 
       mainPanel(
-        tabsetPanel(type = "tabs", id = "tabsetpanel_map", selected = 1, #SELECT TAB 
+        tabsetPanel(type = "tabs", id = "tabsetpanel_map", selected = 11, #SELECT TAB 
           tabPanel(
             title = "Hex Map",  
-            value = 1, 
+            value = 11, 
             br(), 
             imageOutput(ns("map"), width = "98%", height = "98%") %>% withSpinner()
             ), #end tabPanle<Hex Map
           tabPanel(
             title = "Table", 
-            value = 2, 
+            value = 12, 
             br(), 
             DTOutput(ns("table"), width = "98%") %>% withSpinner()
             ) #end tabPanel<Table
@@ -30,7 +30,7 @@ map_Server <- function(id) {
   moduleServer(id, function(input, output, session) {
     
     # variables from mod_filters_Server 
-    var <- mod_filters_Server("var", ONEDATE = TRUE)
+    var <- mod_filters_Server("var", nDATES = 1)
     
     # subset data needed 
     data <- reactive({ 

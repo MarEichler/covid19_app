@@ -16,6 +16,7 @@ box::use(
   , box/meta
   , box/plot_map
   , box/table
+  , box/plot_chart
 )
 
 #######################
