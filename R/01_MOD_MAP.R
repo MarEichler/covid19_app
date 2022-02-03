@@ -50,7 +50,7 @@ map_Server <- function(id) {
       list(
         src         = normalizePath(outfile)
         , width       = out_width
-        , height      = out_width/(8/5)
+        , height      = out_width/(8/5.25)
         , contentType = "image/png"
         , alt         = "alt text palce holder"
       )
