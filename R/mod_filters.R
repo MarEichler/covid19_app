@@ -34,7 +34,7 @@ mod_filters_Server <- function(id, nDATES = 1, GEO = FALSE) {
       ns <- session$ns
       dateInput(
         inputId = ns("date"),
-        label   = glue("Select Date (2020-01-22 to {DATE_max})"), 
+        label   = glue("Select Date ({meta$fmt_date('2020-01-22')} to {meta$fmt_date(DATE_max)})"), 
         min     = DATE_min, 
         max     = DATE_max, 
         value   = DATE_max
@@ -47,7 +47,7 @@ mod_filters_Server <- function(id, nDATES = 1, GEO = FALSE) {
       req ( GROUP == "V" )
       updateDateInput(session,
         inputId = "date",
-        label   = glue("Select Date (2021-01-13 to {DATE_max})"),
+        label   = glue("Select Date ({meta$fmt_date('2021-01-13')} to {meta$fmt_date(DATE_max)})"),
         min     = "2021-01-13"
       ) #end updateDateInput
     }) #end observe 
@@ -60,7 +60,7 @@ mod_filters_Server <- function(id, nDATES = 1, GEO = FALSE) {
       ns <- session$ns
       dateRangeInput(
         inputId = ns("daterng"),
-        label   = glue("Select Date (2020-01-22 to {DATE_max})"), 
+        label   = glue("Select Date ({meta$fmt_date('2020-01-22')} to {meta$fmt_date(DATE_max)})"), 
         min     = DATE_min, 
         max     = DATE_max, 
         start   = DATE_min, 
@@ -74,7 +74,7 @@ mod_filters_Server <- function(id, nDATES = 1, GEO = FALSE) {
       req ( GROUP == "V" )
       updateDateRangeInput(session,
                       inputId = "daterng",
-                      label   = glue("Select Date (2021-01-13 to {DATE_max})"),
+                      label   = glue("Select Date ({meta$fmt_date('2021-01-13')} to {meta$fmt_date(DATE_max)})"),
                       min     = "2021-01-13", 
                       start   = "2021-01-13"
       ) #end updateDateInput

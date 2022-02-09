@@ -98,3 +98,23 @@ GEOnames <- c(
   , "Wisconsin" 
   , "Wyoming" 
 )
+
+
+#' Format Dates 
+#' @param INDATE 
+#' @export
+fmt_date <- function(INDATE){
+  
+  if (class(INDATE) == "Date"){
+    THISDATE <- INDATE
+  } 
+  
+  if (class(INDATE) == "character" & nchar(INDATE) == 10){
+    THISDATE <- as.Date(INDATE)
+  }
+  
+  OUTDATE <- format(THISDATE, "%b %e, %Y")
+  return(OUTDATE)
+  
+}
+
