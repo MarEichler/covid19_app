@@ -40,7 +40,7 @@ chart_Server <- function(id) {
     })
     
     p <- reactive({ 
-      ggplot2::ggplot() + ggplot2::ggtitle( paste( var$metric(), var$daterng()[1], var$daterng()[2], var$geo()    ) )
+      plot_chart$create_chart( DT = data()$DT, VAR = data()$VAR, GEO = data()$GEO ) 
     })
     
     # create image 
@@ -48,11 +48,11 @@ chart_Server <- function(id) {
       plotit <- p()
       out_width   <- session$clientData[[glue("output_{id}-chart_width" )]]
       outfile <- tempfile(fileext = ".png")
-      ggsave(file = outfile, plot = plotit, width = 8, height = 5.25)
+      ggsave(file = outfile, plot = plotit, width = 8, height = 4.25)
       list(
         src         = normalizePath(outfile)
         , width       = out_width
-        , height      = out_width/(8/5)
+        , height      = out_width/(8/4.25)
         , contentType = "image/png"
         , alt         = "alt text palce holder"
       )

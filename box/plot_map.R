@@ -5,7 +5,6 @@ box::use(
   , tibble[tribble]
   , glue[glue]
   , scales[percent, comma]
-  , glue[glue]
   , stats[quantile]
   , ./meta
 #doesn't work in box::use({package}[...]) 
