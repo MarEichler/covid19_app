@@ -18,13 +18,36 @@ which_Y_scale <- function(TYPE, SUFFIX){
 }
 
 
+#' Subset main DT for plot data 
+#' @param DT 
+#' @param VAR 
+#' @param INDATE 
+#' @export
+PlotDT_chart <- function(DT, VAR, GEO, DATE_RNG){
+  
+  DT    <- select(
+    filter(DT
+           , state_name == GEO
+           , DATE >= DATE_RNG[1]
+           , DATE <= DATE_RNG[2])
+    , DATE, val = all_of(VAR), state_name)
+  return(list(
+      DT   = DT
+    , VAR  = VAR
+    , NAME = meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$NAME 
+    , GEO  = GEO
+    , DATE_RNG = DATE_RNG
+  ))
+  
+}
+
 #' Create Line chart 
 #' @param DT 
 #' @param VAR 
 #' @export
-create_chart <- function(DT, VAR, GEO = "United States", DATE_RNG){
+create_chart <- function(DT, VAR, GEO){
   
-  toPlot    <- select(filter(DT, state_name == GEO, DATE >= DATE_RNG[1], DATE <= DATE_RNG[2]), DATE, val = all_of(VAR), state_name)
+  toPlot    <- DT
   plottitle <- glue("{meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$NAME}: {GEO}")
   
   TYPE   <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$TYPE
@@ -35,8 +58,12 @@ create_chart <- function(DT, VAR, GEO = "United States", DATE_RNG){
   DIVIDE <- case_when(E <  3         ~ 1 , E >= 3 & E < 6 ~ 1e+03, E >= 6         ~ 1e+06)
   SUFFIX <- case_when(E <  3         ~ "", E >= 3 & E < 6 ~ "K"  , E >= 6         ~ "M"  )
   
+  
+  min_date <- min(toPlot$DATE, na.rm = TRUE)
+  max_date <- max(toPlot$DATE, na.rm = TRUE)
+  
   x_breaks <- scales::pretty_breaks(n= 6)(toPlot$DATE)
-  x_label_fmt <- ifelse(length(x_breaks) > length(unique(format(x_breaks, "%Y-%m"))), "%b %d\n%Y", "%b %d\n%Y")
+  x_label_fmt <- ifelse(length(x_breaks) > length(unique(format(x_breaks, "%Y-%m"))), "%b %d\n%Y", "%b\n%Y")
   
   p <- ggplot(toPlot, aes(x = DATE, y = val/DIVIDE)) + 
     geom_line() + 
@@ -47,15 +74,16 @@ create_chart <- function(DT, VAR, GEO = "United States", DATE_RNG){
     theme_minimal() + 
     theme(
         plot.title = element_text(face = "bold", hjust = 0.5, margin = margin(t=3, r=0, b=6, l=0), family = "Ubuntu")
-      , legend.spacing.x = unit(0, 'cm')
       , axis.text  = element_text(family = "Ubuntu Mono", size = 8) #default size ~ 8.9
       , axis.title = element_text(family = "Ubuntu")
       , axis.line  = element_line(color = "grey30")
       , axis.ticks = element_line(color = "grey30")
       , axis.ticks.length = unit(5, "pt")
+      , plot.margin = margin(t=5.5, r=15, b=5.5, l=5.5, unit = "pt") #default theme_minimal()$plot.margin
     )
-  
+  logger::log_info(glue("Create Chart Map for {VAR}: {GEO}"))
   return(p)
+  
 }
 
 
