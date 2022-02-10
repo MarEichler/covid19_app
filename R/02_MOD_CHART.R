@@ -17,7 +17,7 @@ chart_UI <- function(id) {
             title = "Table", 
             value = 12, 
             br(), 
-           # DTOutput(ns("table"), width = "98%") %>% withSpinner()
+            DTOutput(ns("table"), width = "98%") %>% withSpinner()
             ) #end tabPanel<Table
         ) #end tabsetPanel<tabsetpanle_map
       ) #end mainPanel 
@@ -32,14 +32,12 @@ chart_Server <- function(id) {
     # variables from mod_filters_Server 
     var <- mod_filters_Server("var", nDATES = 2, GEO = TRUE )
     
-    # # subset data needed 
-    # data <- reactive({ 
-    #   req( var$date() )
-    #   plot_map$PlotDT_map( DT = DATA_state, VAR = var$metric(), INDATE = var$date() ) 
-    # }) #end reactive<data
-    # 
-    # # create plot 
-    # p <- reactive({ plot_map$create_map( DT = data()$DT, VAR = data()$VAR )  }) #end reactive<p
+    # subset data needed
+    data <- reactive({
+      req( var$daterng()[1] )
+      req( var$daterng()[2] )
+      plot_chart$PlotDT_chart(DT = DATA_state, VAR = var$metric(), GEO = var$geo(), DATE_RNG = var$daterng() )
+    })
     
     p <- reactive({ 
       ggplot2::ggplot() + ggplot2::ggtitle( paste( var$metric(), var$daterng()[1], var$daterng()[2], var$geo()    ) )
@@ -61,11 +59,11 @@ chart_Server <- function(id) {
     }, deleteFile = TRUE) #end renderImage<output$map
     
     
-    # output$table <- renderDT({
-    #   
-    #  table$map_table(DT = data()$DT, VAR = data()$VAR )
-    #   
-    # }) #end renderDT<output$table
+    output$table <- renderDT({
+
+     DT::datatable( data()$DT )
+
+    }) #end renderDT<output$table
     
     
     
