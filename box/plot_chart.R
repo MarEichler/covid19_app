@@ -20,20 +20,22 @@ which_Y_scale <- function(TYPE, SUFFIX){
 
 
 #' Subset main DT for plot data 
+#'
 #' @param DT 
+#' @param GEO 
+#' @param DATE_RNG 
 #' @param VAR 
-#' @param INDATE 
 #' @export
 PlotDT_chart <- function(DT, VAR, GEO, DATE_RNG){
   
-  DT    <- select(
+  subset <- select(
     filter(DT
-           , state_name == GEO
+           , state_name %in% GEO
            , DATE >= DATE_RNG[1]
-           , DATE <= DATE_RNG[2])
+           , DATE <= DATE_RNG[2] )
     , DATE, val = all_of(VAR), state_name)
   return(list(
-      DT   = DT
+      DT   = subset
     , VAR  = VAR
     , NAME = meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$NAME 
     , GEO  = GEO
@@ -41,7 +43,6 @@ PlotDT_chart <- function(DT, VAR, GEO, DATE_RNG){
   ))
   
 }
-
 
 
 #' Create Line chart 

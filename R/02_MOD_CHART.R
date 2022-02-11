@@ -6,7 +6,7 @@ chart_UI <- function(id) {
     sidebarLayout(
       mod_filters_UI(ns("var")), 
       mainPanel(
-        tabsetPanel(type = "tabs", id = "tabsetpanel_chart", selected = 21, #SELECT TAB 
+        tabsetPanel(type = "tabs", id = "tabsetpanel_chart", selected = 22, #SELECT TAB 
           tabPanel(
             title = "Chart",  
             value = 21, 
@@ -15,7 +15,7 @@ chart_UI <- function(id) {
             ), #end tabPanle<Chart
           tabPanel(
             title = "Table", 
-            value = 12, 
+            value = 22, 
             br(), 
             DTOutput(ns("table"), width = "98%") %>% withSpinner()
             ) #end tabPanel<Table
@@ -60,9 +60,7 @@ chart_Server <- function(id) {
     
     
     output$table <- renderDT({
-
-     DT::datatable( data()$DT )
-
+      table$chart_table( DT = data()$DT, VAR = data()$VAR )
     }) #end renderDT<output$table
     
     

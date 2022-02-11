@@ -56,25 +56,27 @@ chart_table <- function(DT, VAR){
   NAME  <- meta$VAROPTS[which(meta$VAROPTS$VAR == VAR),]$NAME 
   DIG   <- log(1/ACC, base = 10)
   
-  out <- datatable(DT)
+  #had issues when using DT, switch to tibble 
+  toShow <- dplyr::select(
+    dplyr::arrange(
+      tidyr::as_tibble(DT), dplyr::desc(val)
+    ), 
+    DATE, val, state_name
+  )
   
-  cols_names_old <- c("DATE", "val", "state_name")
-  cols_names_new <- c("Date", NAME,  "Geography Name")
-
-  toShow <- arrange(DT, desc(DATE))
-
-  data.table::setnames(toShow, cols_names_old, cols_names_new, skip_absent = TRUE)
-
+  colnames(toShow) <- c("Date", NAME, "Geography Name")
+  
   baseDT <- datatable(
-      toShow
+    toShow
     , options = list(
-          searchHighlight = TRUE
+      searchHighlight = TRUE
     ) #end options
   )
-
-       if (TYPE == "p100k" & GROUP ==  "C" ){out <- baseDT %>% DT::formatRound( 2, digits = 1  , mark = ",") }
-  else if (TYPE == "p100k" & GROUP !=  "C" ){out <- baseDT %>% DT::formatRound( 2, digits = DIG, mark = ",") }
-  else if (TYPE == "count"                 ){out <- baseDT %>% DT::formatRound( 2, digits = DIG, mark = ",") }
+  
+  
+  if (TYPE == "p100k" & GROUP ==  "C" ){out <- baseDT %>% DT::formatRound( 2, digits = 1  , mark = ",") } 
+  else if (TYPE == "p100k" & GROUP !=  "C" ){out <- baseDT %>% DT::formatRound( 2, digits = DIG, mark = ",") } 
+  else if (TYPE == "count"                 ){out <- baseDT %>% DT::formatRound( 2, digits = DIG, mark = ",") } 
   else if (TYPE == "pc"                    ){out <- baseDT %>% formatPercentage(2, digits = DIG)             }
   logger::log_info(glue("Create Chart DT for {VAR}: {DT$state_name[1]}"))
   return(out)
