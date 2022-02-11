@@ -6,13 +6,13 @@ chart_UI <- function(id) {
     sidebarLayout(
       mod_filters_UI(ns("var")), 
       mainPanel(
-        tabsetPanel(type = "tabs", id = "tabsetpanel_chart", selected = 22, #SELECT TAB 
+        tabsetPanel(type = "tabs", id = "tabsetpanel_chart", selected = 21, #SELECT TAB 
           tabPanel(
-            title = "Chart",  
+            title = "Chart"  ,  
             value = 21, 
             br(), 
-            imageOutput(ns("chart"), width = "98%", height = "98%") %>% withSpinner()
-            ), #end tabPanle<Chart
+            imageOutput(ns("chartimg"), width = "98%", height = "98%") %>% withSpinner()
+            ), #end tabPanel<chartimg
           tabPanel(
             title = "Table", 
             value = 22, 
@@ -44,9 +44,9 @@ chart_Server <- function(id) {
     })
     
     # create image 
-    output$chart <- renderImage({
+    output$chartimg <- renderImage({
       plotit <- p()
-      out_width   <- session$clientData[[glue("output_{id}-chart_width" )]]
+      out_width   <- session$clientData[[glue("output_{id}-chartimg_width" )]]
       outfile <- tempfile(fileext = ".png")
       ggsave(file = outfile, plot = plotit, width = 8, height = 4.25)
       list(
