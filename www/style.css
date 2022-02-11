@@ -1,0 +1,31 @@
+
+/******************************/
+/*********** SET UP ***********/
+/******************************/
+
+:root {
+  --ablue: #11568a; /*accent blue */ 
+  --dgrey: #333333; /*default dark grey font - contrast to white 12.63:1*/ 
+  --hline: #878889; /*horizontal lines */ 
+  --desct: #595959; /*help text - contrast to white 7:1 */ 
+}
+
+
+/******************************/
+/********** ALL TABS **********/
+/******************************/
+
+/* default font size, color, family */ 
+body {
+  font-size: 14px;
+  color: var(--dgrey);
+  font-family: Ubuntu;  
+}
+
+
+h1 {
+  color: var(--ablue);
+  font-weight: bold; 
+  padding-bottom: 10px;
+  
+}
