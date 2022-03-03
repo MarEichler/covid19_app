@@ -11,6 +11,19 @@
 }
 
 
+/* add fonts */ 
+
+@font-face {
+    font-family: Ubuntu;
+    src: url("fonts/Ubuntu.ttf") format('truetype');
+}
+
+
+@font-face {
+    font-family: Ubuntu Mono;
+    src: url("fonts/Ubuntu Mono.ttf") format('truetype');
+}
+
 /******************************/
 /********** ALL TABS **********/
 /******************************/

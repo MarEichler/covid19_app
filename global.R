@@ -28,8 +28,8 @@ if (Sys.info()[['sysname']] == "Windows"){ extrafont::loadfonts(device = "win", 
 ##when on shinyapps.io (linux)
 if (Sys.info()[['sysname']] == "Linux"){
   dir.create('~/.fonts')
-  file.copy("fonts/Ubuntu.ttf"     , "~/.fonts")
-  file.copy("fonts/Ubuntu Mono.ttf", "~/.fonts")
+  file.copy("www/fonts/Ubuntu.ttf"     , "~/.fonts")
+  file.copy("www/fonts/Ubuntu Mono.ttf", "~/.fonts")
   system('fc-cache -f ~/.fonts')
 }
 
