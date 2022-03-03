@@ -19,7 +19,7 @@ mod_filters_UI <- function(id){
       uiOutput(ns("daterng_ui")), 
       uiOutput(ns("geo_ui")), 
       br(), br(), 
-      div(tags$a("Code Available on GitHub", href = "https://github.com/MarEichler/covid19-app", target = "_blank"))
+      div(tags$a("Code Available on GitHub", href = "https://github.com/MarEichler/covid19_app", target = "_blank"))
     ) #end sidebarPanel 
   ) #end tagList
 } #end mod_filters_UI
