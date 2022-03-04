@@ -34,29 +34,33 @@ R version 4.1.1 (2021-08-10) -- "Kick Things"
 |:--------|:----|:----------------|
 | [`{box}`](https://klmr.me/box/) | 1.1.0 | Create box modules | 
 | [`{data.table}`](https://rdatatable.gitlab.io/data.table/) | 1.14.0| Manage/Manipulate data (much faster than base R or tribbles) | 
-| `{datasets}`* | 4.1.1 | `state.abb`-  list of 50 state abbreviations | 
 | [`{DescTools}`](https://andrisignorell.github.io/DescTools/) | 0.99.43 | Use `RoundTo()` to create axis breaks for trend chart | 
 | [`{DT}`](https://rstudio.github.io/DT/)  | 0.19  | Display data tables | 
+| [`{shinycssloaders}`](https://daattali.com/shiny/shinycssloaders-demo/)| 1.0.0 | Loading animations for plots | 
+| [`{shinyWidgets}`](https://dreamrs.github.io/shinyWidgets/index.html) | 0.6.2 | Additional widgets, `pickerInput()` | 
 | [`{logger}`](https://daroczig.github.io/logger/index.html) | 0.2.0 | Build-in log messages | 
 | [`{scales}`](https://scales.r-lib.org/) | 1.1.1 | Scaling for visualizations, `percent()`/`comma()` | 
 | [`{shiny}`](https://shiny.rstudio.com/) | 1.7.0 | R Shiny Applications | 
-| [`{shinycssloaders}`](https://daattali.com/shiny/shinycssloaders-demo/)| 1.0.0 | Loading animations for plots | 
-| [`{shinyWidgets}`](https://dreamrs.github.io/shinyWidgets/index.html) | 0.6.2 | Additional widgets, `pickerInput()` | 
-| `{stats}`* | 4.1.1 | Create quantile breaks with `quantile()` | 
-| [`{tidyverse}`](https://www.tidyverse.org/) (Core) [`{dplyr}`](https://dplyr.tidyverse.org/) | 1.0.7 | Data manipulation | 
-| [`{tidyverse}`](https://www.tidyverse.org/) (Core) [`{ggplot2}`](https://ggplot2.tidyverse.org/) | 3.3.5 | Create hex map and trends chart | 
-| [`{tidyverse}`](https://www.tidyverse.org/) (Core) [`{readr}`](https://readr.tidyverse.org/)  | 2.0.1 | Read in smaller csv files |
-| [`{tidyverse}`](https://www.tidyverse.org/) (Core) [`{tibble}`](https://tibble.tidyverse.org/) | 3.1.4 | Create tibbles for meta data (like variables and their names) | 
-| [`{tidyverse}`](https://www.tidyverse.org/) (Core) [`{tidyr}`](https://tidyr.tidyverse.org/)  | 1.1.3 | Use `drop_na()` for creating data frame to plot | 
+| [`{urbnmapr}`](https://urbaninstitute.github.io/urbnmapr/) | 0.0.0.9002 | Pull county shape files (not currently used in app) |
+| [`{vroom}`](https://vroom.r-lib.org/) | 1.5.4 | Read in large data quickly | 
+| **base R**[^1] | | | 
+| `{stats}` | 4.1.1 | Create quantile breaks with `quantile()` | 
+| `{datasets}` | 4.1.1 | `state.abb`-  list of 50 state abbreviations | 
+| **Core tidyverse**[^2] | | | 
+| [`{tidyverse}`](https://www.tidyverse.org/) [`{dplyr}`](https://dplyr.tidyverse.org/)| 1.0.7 | Data manipulation | 
+| [`{tidyverse}`](https://www.tidyverse.org/) [`{ggplot2}`](https://ggplot2.tidyverse.org/) | 3.3.5 | Create hex map and trends chart | 
+| [`{tidyverse}`](https://www.tidyverse.org/) [`{readr}`](https://readr.tidyverse.org/)  | 2.0.1 | Read in smaller csv files |
+| [`{tidyverse}`](https://www.tidyverse.org/) [`{tibble}`](https://tibble.tidyverse.org/) | 3.1.4 | Create tibbles for meta data (like variables and their names) | 
+| [`{tidyverse}`](https://www.tidyverse.org/) [`{tidyr}`](https://tidyr.tidyverse.org/)  | 1.1.3 | Use `drop_na()` for creating data frame to plot | 
+| **tidyverse** | | | 
 | [`{tidyverse}`](https://www.tidyverse.org/) [`{lubridate}`](https://lubridate.tidyverse.org/) | 1.7.10| Create/Manage date variables |
 | [`{tidyverse}`](https://www.tidyverse.org/) [`{glue}`](https://glue.tidyverse.org/) | 1.5.1 | Combine text and R code to crate string of text |
 | [`{tidyverse}`](https://www.tidyverse.org/) [`{magrittr}`](https://magrittr.tidyverse.org/) | 1.5.1 | Pipe Operator, `%>%` |
-| [`{urbnmapr}`](https://urbaninstitute.github.io/urbnmapr/) | 0.0.0.9002 | Pull county shape files (not currently used in app) |
-| [`{vroom}`](https://vroom.r-lib.org/) | 1.5.4 | Read in large data quickly | 
 
 
-*\*Note:* Package is automatically loaded in each R session but since it's not technically included in base R functions/datasets, it has to be specified within the box modules.  
+[^1]: Package is automatically loaded in each R session but since it's not technically included in base R functions/datasets, it has to be specified within the box modules. 
 
-I also used [`{viridis}`]() to determine the colors I was using, but have hard-coded the hex codes so it's not actively used within the app.  
+[^2]: All tidyverse packages can be installed using installed using `install.packages("tidyverse")` but core tidyverse packages can also be imported together using `library("tidyverse")`.  For box modules refer to each specific package in the `box::use()` statement instead.  
+
 
 
