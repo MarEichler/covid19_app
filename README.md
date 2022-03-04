@@ -2,8 +2,13 @@
 
 Updated version of the [covid19](https://github.com/MarEichler/covid19) repository that was started in Spring 2020.  
 
+## Data 
 
-## Static Data 
+### Dynamic Data 
+
+COVID-19 data is updated daily.  The app pulls the data from [John's Hopkins (Cases/Deaths)](https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series) and [OWID (Vaccines)](https://github.com/owid/covid-19-data/tree/master/public/data/vaccinations) stores the data.  The data is saved so the pull will only update once a day (beneficial since the pull takes a long time).  
+
+### Static Data 
 
 There are 5 'static' data files that do NOT need to be updated daily.  If running the app from scratch, only need to create these files one time.    
 
@@ -58,7 +63,7 @@ R version 4.1.1 (2021-08-10) -- "Kick Things"
 | [`{tidyverse}`](https://www.tidyverse.org/) [`{magrittr}`](https://magrittr.tidyverse.org/) | 1.5.1 | Pipe Operator, `%>%` |
 
 
-[^1]: Package is automatically loaded in each R session but since it's not technically included in base R functions/datasets, it has to be specified within the box modules. 
+[^1]: Packages are automatically loaded in each R session so you don't need to install or import; however within box modules these packages need to be imported with `box::use()`.
 
 [^2]: All tidyverse packages can be installed using installed using `install.packages("tidyverse")` but core tidyverse packages can also be imported together using `library("tidyverse")`.  For box modules refer to each specific package in the `box::use()` statement instead.  
 
