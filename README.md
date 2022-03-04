@@ -30,7 +30,7 @@ static_data$save_static_data()
 
 R version 4.1.1 (2021-08-10) -- "Kick Things" 
 
-| Package | Version Used | Information | 
+| Package | Version | Information | 
 |:--------|:----|:----------------|
 | [`{box}`](https://klmr.me/box/) | 1.1.0 | Create box modules | 
 | [`{data.table}`](https://rdatatable.gitlab.io/data.table/) | 1.14.0| Manage/Manipulate data (much faster than base R or tribbles) | 
